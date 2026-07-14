@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kanban Board</title>
+
+  <!-- Google Fonts: Sora for headings, Inter for body text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__logo" aria-hidden="true"></span>
+      <h1 class="topbar__title">Kanban Board</h1>
+    </div>
+
+    <div class="topbar__actions">
+      <!-- Theme toggle wiring comes in Week 4 -- just the button markup for now -->
+      <button class="btn btn--icon" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+      <button class="btn btn--primary" id="add-task-btn">+ Add Task</button>
+    </div>
+  </header>
+
+  <!-- ===== Board ===== -->
+  <main class="board">
+
+    <!-- ---- Column: To Do ---- -->
+    <section class="column" data-status="todo">
+      <div class="column__header">
+        <h2 class="column__title">To Do</h2>
+        <span class="column__count">2</span>
+      </div>
+
+      <div class="column__cards" id="todo-cards">
+        <!-- Dummy card -->
+        <article class="card" data-priority="high">
+          <div class="card__priority" aria-hidden="true"></div>
+          <h3 class="card__title">Design homepage layout</h3>
+          <p class="card__desc">Sketch wireframes for the landing page hero and nav.</p>
+          <div class="card__meta">
+            <span class="card__label">design</span>
+            <span class="card__due">Jul 20</span>
+          </div>
+        </article>
+
+        <article class="card" data-priority="medium">
+          <div class="card__priority" aria-hidden="true"></div>
+          <h3 class="card__title">Set up Firebase project</h3>
+          <p class="card__desc">Create Firestore database and auth config.</p>
+          <div class="card__meta">
+            <span class="card__label">setup</span>
+            <span class="card__due">Jul 18</span>
+          </div>
+        </article>
+      </div>
+
+      <button class="column__add-btn">+ Add a card</button>
+    </section>
+
+    <!-- ---- Column: In Progress ---- -->
+    <section class="column" data-status="in-progress">
+      <div class="column__header">
+        <h2 class="column__title">In Progress</h2>
+        <span class="column__count">1</span>
+      </div>
+
+      <div class="column__cards" id="in-progress-cards">
+        <article class="card" data-priority="high">
+          <div class="card__priority" aria-hidden="true"></div>
+          <h3 class="card__title">Build board HTML/CSS</h3>
+          <p class="card__desc">Static layout for columns and cards, responsive grid.</p>
+          <div class="card__meta">
+            <span class="card__label">frontend</span>
+            <span class="card__due">Jul 16</span>
+          </div>
+        </article>
+      </div>
+
+      <button class="column__add-btn">+ Add a card</button>
+    </section>
+
+    <!-- ---- Column: Done ---- -->
+    <section class="column" data-status="done">
+      <div class="column__header">
+        <h2 class="column__title">Done</h2>
+        <span class="column__count">1</span>
+      </div>
+
+      <div class="column__cards" id="done-cards">
+        <article class="card" data-priority="low">
+          <div class="card__priority" aria-hidden="true"></div>
+          <h3 class="card__title">Agree on task object shape</h3>
+          <p class="card__desc">Synced with teammate on Firestore task fields.</p>
+          <div class="card__meta">
+            <span class="card__label">planning</span>
+            <span class="card__due">Jul 14</span>
+          </div>
+        </article>
+      </div>
+
+      <button class="column__add-btn">+ Add a card</button>
+    </section>
+
+  </main>
+
+  <!-- js/board.js and js/ui.js will come in Week 2 -->
+</body>
+</html>
