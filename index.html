@@ -23,7 +23,13 @@
     <div class="topbar__actions">
       <!-- Theme toggle wiring comes in Week 4 -- just the button markup for now -->
       <button class="btn btn--icon" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
-      <button class="btn btn--primary" id="add-task-btn">+ Add Task</button>
+
+      <!-- Profile placeholder — teammate's auth.js can update #profile-name / #profile-avatar
+           with the signed-in user's real name/initials once auth is wired up -->
+      <button class="profile" id="user-profile" aria-label="Account">
+        <span class="profile__avatar" id="profile-avatar" aria-hidden="true">JD</span>
+        <span class="profile__name" id="profile-name">Jordan Doe</span>
+      </button>
     </div>
   </header>
 
