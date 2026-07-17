@@ -199,6 +199,39 @@
     </section>
 
   </main>
+  <!-- TEMPORARY - for testing auth.js only -->
+  <div id="auth-test">
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button id="signup-btn">Sign Up</button>
+    <button id="login-btn">Log In</button>
+    <button id="logout-btn">Log Out</button>
+    <p id="auth-status"></p>
+  </div>
+
+  <script type="module">
+    import { signUp, logIn, logOut, watchAuthState } from "./js/auth.js";
+
+    document.getElementById("signup-btn").onclick = () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signUp(email, password).catch(e => alert(e.message));
+    };
+
+    document.getElementById("login-btn").onclick = () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      logIn(email, password).catch(e => alert(e.message));
+    };
+
+    document.getElementById("logout-btn").onclick = () => logOut();
+
+    watchAuthState((user) => {
+      document.getElementById("auth-status").textContent = user
+        ? `Logged in as ${user.email}`
+        : "Not logged in";
+    });
+  </script>
 
   <!-- js/board.js and js/ui.js will come in Week 2 -->
   <script type="module" src="js/firebase-config.js"></script>
