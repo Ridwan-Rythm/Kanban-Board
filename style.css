@@ -103,8 +103,6 @@ body.dark {
 html, body {
   margin: 0;
   padding: 0;
-  /* Safety net: nothing on the page should cause sideways scroll on phones */
-  overflow-x: hidden;
 }
 
 body {
@@ -203,8 +201,6 @@ button:focus-visible {
 .btn--icon {
   padding: 8px 10px;
   line-height: 1;
-  min-width: 40px;
-  min-height: 40px;
 }
 
 /* ---------- Profile widget (top right) ---------- */
@@ -247,11 +243,8 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-/* On narrow phones, hide the name and show just the avatar.
-   Raised to 480px (was 380px) — at 360px the full brand + actions
-   row doesn't reliably fit with the name showing, so we hide it
-   across the whole 360–430px phone range and a little past it. */
-@media (max-width: 480px) {
+/* On very narrow phones, hide the name and show just the avatar */
+@media (max-width: 380px) {
   .profile__name {
     display: none;
   }
@@ -422,7 +415,6 @@ button:focus-visible {
 .card__title {
   font-size: 0.92rem;
   font-weight: 600;
-  overflow-wrap: break-word;
 }
 
 .card__chevron {
@@ -435,7 +427,6 @@ button:focus-visible {
   color: var(--text-muted);
   margin: 2px 0 10px;
   line-height: 1.4;
-  overflow-wrap: break-word;
 }
 
 /* Attachment row: Folder / File / Ticket */
@@ -500,6 +491,13 @@ button:focus-visible {
   gap: 6px;
   color: var(--text-muted);
   font-weight: 500;
+  min-width: 0; /* required for text-overflow to work inside a flex child */
+}
+
+.card__assignee-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card__avatar {
@@ -533,11 +531,23 @@ button:focus-visible {
 
 /* ---------- Responsive breakpoints ---------- */
 
-/* Tablet and up: columns side by side, 2 per row */
+/* Tablet and up: columns side by side, 2 per row.
+   Each column gets a capped height with its own scrollbar for cards,
+   so a column with lots of cards doesn't force every other column
+   to stretch and pad out with empty space (Trello-style). */
 @media (min-width: 640px) {
   .board {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .column {
+    max-height: calc(100vh - 120px);
+  }
+
+  .column__cards {
+    flex: 1 1 auto;
+    overflow-y: auto;
   }
 }
 
