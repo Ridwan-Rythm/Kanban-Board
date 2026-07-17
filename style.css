@@ -103,6 +103,8 @@ body.dark {
 html, body {
   margin: 0;
   padding: 0;
+  /* Safety net: nothing on the page should cause sideways scroll on phones */
+  overflow-x: hidden;
 }
 
 body {
@@ -201,6 +203,8 @@ button:focus-visible {
 .btn--icon {
   padding: 8px 10px;
   line-height: 1;
+  min-width: 40px;
+  min-height: 40px;
 }
 
 /* ---------- Profile widget (top right) ---------- */
@@ -243,8 +247,11 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-/* On very narrow phones, hide the name and show just the avatar */
-@media (max-width: 380px) {
+/* On narrow phones, hide the name and show just the avatar.
+   Raised to 480px (was 380px) — at 360px the full brand + actions
+   row doesn't reliably fit with the name showing, so we hide it
+   across the whole 360–430px phone range and a little past it. */
+@media (max-width: 480px) {
   .profile__name {
     display: none;
   }
@@ -415,6 +422,7 @@ button:focus-visible {
 .card__title {
   font-size: 0.92rem;
   font-weight: 600;
+  overflow-wrap: break-word;
 }
 
 .card__chevron {
@@ -427,6 +435,7 @@ button:focus-visible {
   color: var(--text-muted);
   margin: 2px 0 10px;
   line-height: 1.4;
+  overflow-wrap: break-word;
 }
 
 /* Attachment row: Folder / File / Ticket */
