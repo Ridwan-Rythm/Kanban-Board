@@ -34,7 +34,7 @@
   </header>
 
   <!-- ===== Board ===== -->
-  <main class="board">
+  <main class="board is-hidden" id="board-page">
 
     <!-- ---- Column: To Do ---- -->
     <section class="column" data-status="todo">
@@ -200,14 +200,32 @@
 
   </main>
   <!-- TEMPORARY - for testing auth.js only -->
-  <div id="auth-test">
-    <input id="email" type="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password" />
-    <button id="signup-btn">Sign Up</button>
-    <button id="login-btn">Log In</button>
-    <button id="logout-btn">Log Out</button>
-    <p id="auth-status"></p>
-  </div>
+  <section class="auth-page" id="auth-page">
+    <div id="auth-test" class="auth-card">
+      <span class="auth-card__badge" aria-hidden="true">🌸</span>
+      <h2 class="auth-card__title">Welcome Back</h2>
+      <p class="auth-card__subtitle">Log in to your Kanban Board</p>
+
+      <div class="auth-field">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" />
+      </div>
+
+      <div class="auth-field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" />
+      </div>
+
+      <div class="auth-card__actions">
+        <button id="login-btn" class="btn btn--primary">Log In</button>
+        <button id="signup-btn" class="btn">Sign Up</button>
+      </div>
+
+      <button id="logout-btn" class="auth-card__logout">Log Out</button>
+
+      <p id="auth-status" class="auth-card__status"></p>
+    </div>
+  </section>
 
   <script type="module">
     import { signUp, logIn, logOut, watchAuthState } from "./js/auth.js";
@@ -230,6 +248,17 @@
       document.getElementById("auth-status").textContent = user
         ? `Logged in as ${user.email}`
         : "Not logged in";
+
+      // Swap which "page" is visible — login page first, board only after login
+      const authPage = document.getElementById("auth-page");
+      const boardPage = document.getElementById("board-page");
+      if (user) {
+        authPage.classList.add("is-hidden");
+        boardPage.classList.remove("is-hidden");
+      } else {
+        authPage.classList.remove("is-hidden");
+        boardPage.classList.add("is-hidden");
+      }
     });
   </script>
   
