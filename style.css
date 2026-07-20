@@ -692,4 +692,37 @@ button:focus-visible {
   .auth-card {
     padding: 22px 18px;
   }
+ feature/Login-UI
+
+}
+
+/* =========================================================
+   Drag-and-drop states (SortableJS)
+   Classes are applied/removed automatically by SortableJS
+   during a drag — see js/board.js for the config.
+   ========================================================= */
+
+/* Cards look grabbable even before you pick one up */
+.card {
+  cursor: grab;
+}
+
+/* The empty placeholder left behind in the list while dragging */
+.card--ghost {
+  opacity: 0.4;
+  border: 1px dashed var(--accent);
+  background: var(--bg);
+}
+
+/* The original card, while it's the one currently picked up */
+.card--chosen {
+  cursor: grabbing;
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* The clone that actually follows the cursor/finger while dragging */
+.card--dragging {
+  opacity: 0.9;
+  transform: rotate(2deg);
+ main
 }
