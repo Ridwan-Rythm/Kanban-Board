@@ -699,6 +699,7 @@ button:focus-visible {
   .auth-card {
     padding: 22px 18px;
   }
+
 }
 
 /* =========================================================
@@ -729,6 +730,7 @@ button:focus-visible {
 .card--dragging {
   opacity: 0.9;
   transform: rotate(2deg);
+
 }
 
 /* =========================================================
