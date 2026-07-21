@@ -587,12 +587,31 @@ button:focus-visible {
    ========================================================= */
 
 .auth-page {
-  min-height: 60vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px 16px;
   background: linear-gradient(135deg, var(--status-progress-bg), var(--column-bg), var(--status-done-bg));
+}
+
+/* While the login page is showing: lock the whole page from scrolling
+   (desktop and phone). Body becomes a column flexbox — topbar takes
+   its natural height, auth-page fills exactly what's left, so the
+   two together never add up to more than the screen. This only
+   applies when .auth-locked is present, so the board's own scroll
+   behavior elsewhere is completely unaffected. */
+body.auth-locked {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body.auth-locked .auth-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .auth-card {

@@ -11,7 +11,7 @@
 
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="auth-locked">
 
   <!-- ===== Top bar ===== -->
   <header class="topbar">
@@ -255,9 +255,11 @@
       if (user) {
         authPage.classList.add("is-hidden");
         boardPage.classList.remove("is-hidden");
+        document.body.classList.remove("auth-locked");
       } else {
         authPage.classList.remove("is-hidden");
         boardPage.classList.add("is-hidden");
+        document.body.classList.add("auth-locked");
       }
     });
   </script>
