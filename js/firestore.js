@@ -41,23 +41,15 @@ export function addTask(taskData) {
 export function getTasks(callback) {
   const user = auth.currentUser;
   if (!user) {
-    console.error("No user logged in — cannot fetch tasks");
-    return () => {}; // return a no-op unsubscribe
+    callback([]); // return empty array instead of leaving teammate's UI hanging
+    return () => {};
   }
-
   const q = query(tasksRef, where("userId", "==", user.uid));
-
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const tasks = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    callback(tasks);
-  }, (error) => {
-    console.error("Error listening to tasks:", error);
+    const tasks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    callback(tasks); // will just be [] if no tasks exist — teammate's UI should handle showing an empty state
   });
-
-  return unsubscribe; // teammate calls this to stop listening (e.g. on logout)
+  return unsubscribe;
 }
 
 import { doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
