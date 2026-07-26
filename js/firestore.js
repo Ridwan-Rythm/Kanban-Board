@@ -59,3 +59,39 @@ export function getTasks(callback) {
 
   return unsubscribe; // teammate calls this to stop listening (e.g. on logout)
 }
+
+import { doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+// Update an existing task
+export function updateTask(taskId, updates) {
+  const taskDoc = doc(db, "tasks", taskId);
+
+  const updatesWithTimestamp = {
+    ...updates,
+    updatedAt: serverTimestamp()
+  };
+
+  // If dueDate is being updated, convert it to a Timestamp
+  if (updates.dueDate) {
+    updatesWithTimestamp.dueDate = Timestamp.fromDate(new Date(updates.dueDate));
+  }
+
+  return updateDoc(taskDoc, updatesWithTimestamp)
+    .then(() => console.log("Task updated:", taskId))
+    .catch((error) => {
+      console.error("Error updating task:", error);
+      throw error;
+    });
+}
+
+// Delete a task
+export function deleteTask(taskId) {
+  const taskDoc = doc(db, "tasks", taskId);
+
+  return deleteDoc(taskDoc)
+    .then(() => console.log("Task deleted:", taskId))
+    .catch((error) => {
+      console.error("Error deleting task:", error);
+      throw error;
+    });
+}
