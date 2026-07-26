@@ -41,13 +41,20 @@ export function addTask(taskData) {
 export function getTasks(callback) {
   const user = auth.currentUser;
   if (!user) {
-    callback([]); // return empty array instead of leaving teammate's UI hanging
+    callback([]);
     return () => {};
   }
   const q = query(tasksRef, where("userId", "==", user.uid));
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const tasks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    callback(tasks); // will just be [] if no tasks exist — teammate's UI should handle showing an empty state
+    const tasks = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        dueDate: data.dueDate ? data.dueDate.toDate().toISOString().split("T")[0] : null
+      };
+    });
+    callback(tasks);
   });
   return unsubscribe;
 }
