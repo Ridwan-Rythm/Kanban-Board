@@ -1,70 +1,136 @@
 // board.js
 // Owned by: Person A (UI & Board Experience)
 //
-// Wires up SortableJS so cards can be dragged between columns.
-// Requires the SortableJS <script> tag (loaded in index.html) to
-// run BEFORE this file, since it uses the global `Sortable` object.
+// Two jobs:
+//   1. Render the board from real task data (teammate's getTasks()),
+//      instead of the static dummy cards that used to live in index.html.
+//   2. Wire up SortableJS so cards can be dragged between columns, and
+//      persist the move via teammate's updateTask().
+//
+// Requires the SortableJS <script> tag (loaded in index.html) to run
+// BEFORE this file, since it uses the global `Sortable` object.
+
+import { getTasks, updateTask } from "./firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Grab every column's card list and turn each one into a
-  // drag-and-drop zone. Cards can be dragged from any one of
-  // these lists into any other, because they all share the same
-  // `group` name below.
   const cardLists = document.querySelectorAll(".column__cards");
 
+  // Set up drag-and-drop once. These containers themselves are never
+  // replaced on re-render (only the individual cards inside them are),
+  // so these Sortable instances stay valid every time the board re-renders.
   cardLists.forEach((list) => {
     Sortable.create(list, {
-      group: "kanban-board", // same group name on every list = cards can move between all of them
-      animation: 150,        // ms — smooth slide as cards make room
-      ghostClass: "card--ghost",   // class applied to the empty placeholder while dragging
-      chosenClass: "card--chosen", // class applied to the card actually being picked up
-      dragClass: "card--dragging", // class applied to the dragged clone that follows the cursor
-
-      // Fires once, when a drag ends (whether the card moved
-      // columns or was just reordered within the same one).
+      group: "kanban-board",
+      animation: 150,
+      ghostClass: "card--ghost",
+      chosenClass: "card--chosen",
+      dragClass: "card--dragging",
       onEnd: handleCardMoved,
     });
+  });
+
+  // Subscribe to real-time task data. Fires immediately with the
+  // current tasks, then again every time anything changes.
+  getTasks((tasks) => {
+    renderBoard(tasks);
   });
 });
 
 /**
- * Runs after a card is dropped anywhere on the board.
- * Figures out the task's new status from the column it landed in,
- * and hands off to onCardMoved() below.
+ * Rebuilds every column's card list from the given task array.
+ * Called every time Firestore's real-time listener fires.
  */
-function handleCardMoved(evt) {
-  const card = evt.item;                     // the <article class="card"> that was dragged
-  const fromColumn = evt.from.closest(".column");
-  const toColumn = evt.to.closest(".column");
+function renderBoard(tasks) {
+  const byStatus = { todo: [], "in-progress": [], "in-review": [], done: [] };
 
-  // Ignore reorders within the same column for now — status hasn't
-  // actually changed, so there's nothing to persist.
-  if (fromColumn === toColumn) return;
+  tasks.forEach((task) => {
+    const status = byStatus[task.status] ? task.status : "todo"; // fallback for any unexpected value
+    byStatus[status].push(task);
+  });
 
-  const newStatus = toColumn.dataset.status;             // e.g. "in-progress"
-  const taskTitleEl = card.querySelector(".card__title");
-  const taskTitle = taskTitleEl ? taskTitleEl.textContent.trim() : "(untitled card)";
-
-  onCardMoved(card, taskTitle, newStatus);
+  document.querySelectorAll(".column").forEach((column) => {
+    const status = column.dataset.status;
+    const list = column.querySelector(".column__cards");
+    list.innerHTML = ""; // clear whatever was there before (dummy cards or a previous render)
+    byStatus[status].forEach((task) => {
+      list.appendChild(buildCardElement(task));
+    });
+  });
 }
 
 /**
- * TEMPORARY placeholder — dummy data has no real task ids yet, so
- * this just logs what happened. Once teammate's firestore.js
- * exposes updateTask(id, changes), replace the body of this
- * function with something like:
- *
- *   const taskId = card.dataset.taskId;
- *   updateTask(taskId, { status: newStatus });
- *
- * (Cards will need a data-task-id attribute added once real task
- * data is being rendered — see the rendering TODO below.)
+ * Builds a <article class="card"> DOM node for one task, matching the
+ * same markup structure the static dummy cards used to have.
+ * Sets data-task-id so board.js/ui.js can identify which real
+ * Firestore document a card corresponds to.
  */
-function onCardMoved(card, taskTitle, newStatus) {
-  console.log(`"${taskTitle}" moved to status: ${newStatus}`);
+function buildCardElement(task) {
+  const article = document.createElement("article");
+  article.className = "card";
+  article.dataset.taskId = task.id;
+
+  article.innerHTML = `
+    <div class="card__priority" aria-hidden="true"></div>
+    <div class="card__tags">
+      ${task.label ? `<span class="tag">${escapeHTML(task.label)}</span>` : ""}
+      <span class="tag">${escapeHTML(capitalize(task.priority || "medium"))}</span>
+    </div>
+    <div class="card__title-row">
+      <h3 class="card__title">${escapeHTML(task.title || "Untitled")}</h3>
+      <span class="card__chevron" aria-hidden="true">⌄</span>
+    </div>
+    <p class="card__desc">${escapeHTML(task.description || "No description")}</p>
+    <div class="card__notes">
+      <span class="card__notes-label">Notes:</span>
+      <p class="card__notes-placeholder">Type here...</p>
+    </div>
+    <div class="card__meta">
+      <span class="card__assignee">
+        <span class="card__avatar" aria-hidden="true"></span>
+        <span class="card__assignee-name">To be assigned</span>
+      </span>
+      <span class="card__due">📅 ${escapeHTML(formatDueDateDisplay(task.dueDate))}</span>
+    </div>
+  `;
+  return article;
 }
 
-// TODO (later in Week 2): once teammate's getTasks() is ready,
-// this file will also be responsible for rendering cards into
-// their columns from real task data, instead of the static dummy
-// cards currently written directly in index.html.
+/**
+ * Runs after a card is dropped anywhere on the board. Figures out the
+ * task's new status from the column it landed in, and persists it.
+ */
+function handleCardMoved(evt) {
+  const card = evt.item;
+  const fromColumn = evt.from.closest(".column");
+  const toColumn = evt.to.closest(".column");
+
+  if (fromColumn === toColumn) return; // just a reorder, status unchanged
+
+  const newStatus = toColumn.dataset.status;
+  const taskId = card.dataset.taskId;
+  if (!taskId) return; // safety net — shouldn't happen once real data is rendering
+
+  updateTask(taskId, { status: newStatus }).catch((err) => {
+    console.error("Failed to update task status:", err);
+    // The next getTasks() snapshot will re-render from the real
+    // (unchanged) data anyway, so the card will snap back on its own.
+  });
+}
+
+// getTasks() now always gives dueDate as a plain "YYYY-MM-DD" string.
+function formatDueDateDisplay(value) {
+  if (!value) return "DD MM";
+  const [, month, day] = value.split("-");
+  return `${day} ${month}`;
+}
+
+function capitalize(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+}
+
+// Prevents any task text from being interpreted as HTML.
+function escapeHTML(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
