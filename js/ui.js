@@ -1,14 +1,3 @@
-// ui.js
-// Owned by: Person A (UI & Board Experience)
-//
-// Handles the Add/Edit/Delete task modal. Now wired to teammate's
-// firestore.js: saving/deleting calls the real functions, and
-// board.js's live getTasks() listener re-renders the board
-// automatically once the data changes — this file no longer touches
-// card DOM elements directly.
-//
-// Theme toggle logic will also live in this file — coming Week 4.
-
 import { addTask, updateTask, deleteTask } from "./firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -28,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let mode = "add";           // "add" or "edit"
   let targetStatus = null;    // status to assign a new task, e.g. "todo"
-  let editingCard = null;     // the <article class="card"> being edited, if mode === "edit"
+  let editingTaskID = null;     // the <article class="card"> being edited, if mode === "edit"
 
   // ---- Open in ADD mode: any column's "+ Add a card" button ----
   document.querySelectorAll(".column__add-btn").forEach((btn) => {
@@ -54,18 +43,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (mode === "add") {
       targetStatus = status;
-      editingCard = null;
+      editingTaskID = null;
       modalTitle.textContent = "Add Task";
       deleteBtn.hidden = true;
     } else {
-      editingCard = card;
+      editingTaskID = card.dataset.taskId;
       modalTitle.textContent = "Edit Task";
       deleteBtn.hidden = false;
 
       // Pre-fill from the card's rendered content (board.js put these
       // there from the real task data).
-      titleInput.value = card.querySelector(".card__title")?.textContent.trim() || "";
-      descInput.value = card.querySelector(".card__desc")?.textContent.trim() || "";
+      const task = JSON.parse(card.dataset.task || "{}");
+
+      titleInput.value = task.title || "";
+      descInput.value = task.description || "";
+      dueInput.value = task.dueDate || "";
+      priorityInput.value = task.priority || "medium";
+      labelInput.value = task.label || "";
     }
 
     overlay.classList.remove("is-hidden");
@@ -74,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function closeModal() {
     overlay.classList.add("is-hidden");
-    editingCard = null;
+    editingTaskID = null;
     targetStatus = null;
   }
 
@@ -108,13 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       if (mode === "add") {
+        if (!targetStatus) {
+          alert("Something went wrong: missing column status");
+          return;
+        }
         taskData.status = targetStatus;
         await addTask(taskData);
-        // No manual DOM update needed — board.js's getTasks() listener
-        // will re-render the board with the new task automatically.
-      } else if (mode === "edit" && editingCard) {
-        const taskId = editingCard.dataset.taskId;
-        await updateTask(taskId, taskData);
+      } else if (mode === "edit" && editingTaskID) {
+        await updateTask(editingTaskID, taskData);
       }
       closeModal();
     } catch (err) {
@@ -124,13 +119,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- Delete ----
   deleteBtn.addEventListener("click", async () => {
-    if (!editingCard) {
+    if (!editingTaskID) {
       closeModal();
       return;
     }
-    const taskId = editingCard.dataset.taskId;
     try {
-      await deleteTask(taskId);
+      await deleteTask(editingTaskID);
       closeModal();
     } catch (err) {
       alert("Couldn't delete this task: " + err.message);
