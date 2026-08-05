@@ -44,7 +44,7 @@
 
       <div class="column__cards" id="todo-cards">
         <!-- Dummy card -->
-        <article class="card">
+        <article class="card demo-card">
           <div class="card__priority" aria-hidden="true"></div>
 
           <div class="card__tags">
@@ -84,7 +84,7 @@
       </div>
 
       <div class="column__cards" id="in-progress-cards">
-        <article class="card">
+        <article class="card demo-card">
           <div class="card__priority" aria-hidden="true"></div>
 
           <div class="card__tags">
@@ -124,7 +124,7 @@
       </div>
 
       <div class="column__cards" id="in-review-cards">
-        <article class="card">
+        <article class="card demo-card">
           <div class="card__priority" aria-hidden="true"></div>
 
           <div class="card__tags">
@@ -165,7 +165,7 @@
       </div>
 
       <div class="column__cards" id="done-cards">
-        <article class="card">
+        <article class="card demo-card">
           <div class="card__priority" aria-hidden="true"></div>
 
           <div class="card__tags">
@@ -331,8 +331,8 @@
 
   <!-- SortableJS: drag-and-drop between columns. Must load before board.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-  <script src="js/board.js"></script>
-  <script src="js/ui.js"></script>
+  <script type="module" src="js/board.js"></script>
+  <script type="module" src="js/ui.js"></script>
 
   
 </body>

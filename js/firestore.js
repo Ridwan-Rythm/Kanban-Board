@@ -6,7 +6,10 @@ import {
   where,
   onSnapshot,
   serverTimestamp,
-  Timestamp
+  Timestamp,
+  doc,
+  updateDoc,
+  deleteDoc
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { db, auth } from "./firebase-config.js";
 
@@ -39,36 +42,29 @@ export function addTask(taskData) {
 
 // Real-time listener for the logged-in user's tasks
 export function getTasks(callback) {
-  const user = auth.currentUser;
-  if (!user) {
-feature/login-bugfix
-    callback([]); // return empty array instead of leaving teammate's UI hanging
+  return auth.onAuthStateChanged((user) => {
+    if (!user) {
+      callback([]);
+      return;
+    }
 
-    callback([]);
- main
-    return () => {};
-  }
-  const q = query(tasksRef, where("userId", "==", user.uid));
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-feature/login-bugfix
-    const tasks = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    callback(tasks); // will just be [] if no tasks exist — teammate's UI should handle showing an empty state
+    const q = query(tasksRef, where("userId", "==", user.uid));
 
-    const tasks = snapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        ...data,
-        dueDate: data.dueDate ? data.dueDate.toDate().toISOString().split("T")[0] : null
-      };
+    return onSnapshot(q, (snapshot) => {
+      const tasks = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          dueDate: data.dueDate
+            ? data.dueDate.toDate().toISOString().split("T")[0]
+            : null,
+        };
+      });
+      callback(tasks);
     });
-    callback(tasks);
-main
   });
-  return unsubscribe;
 }
-
-import { doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 // Update an existing task
 export function updateTask(taskId, updates) {

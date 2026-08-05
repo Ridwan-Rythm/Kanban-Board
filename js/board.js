@@ -1,15 +1,3 @@
-// board.js
-// Owned by: Person A (UI & Board Experience)
-//
-// Two jobs:
-//   1. Render the board from real task data (teammate's getTasks()),
-//      instead of the static dummy cards that used to live in index.html.
-//   2. Wire up SortableJS so cards can be dragged between columns, and
-//      persist the move via teammate's updateTask().
-//
-// Requires the SortableJS <script> tag (loaded in index.html) to run
-// BEFORE this file, since it uses the global `Sortable` object.
-
 import { getTasks, updateTask } from "./firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -51,7 +39,19 @@ function renderBoard(tasks) {
   document.querySelectorAll(".column").forEach((column) => {
     const status = column.dataset.status;
     const list = column.querySelector(".column__cards");
-    list.innerHTML = ""; // clear whatever was there before (dummy cards or a previous render)
+
+    const demoCard = list.querySelector(".demo-card");
+
+    // clear list
+    list.innerHTML = "";
+
+    if (byStatus[status].length === 0) {
+      if (demoCard) {
+        list.appendChild(demoCard);
+      }
+      return;
+    }
+
     byStatus[status].forEach((task) => {
       list.appendChild(buildCardElement(task));
     });
@@ -68,6 +68,7 @@ function buildCardElement(task) {
   const article = document.createElement("article");
   article.className = "card";
   article.dataset.taskId = task.id;
+  article.dataset.task = JSON.stringify(task);
 
   article.innerHTML = `
     <div class="card__priority" aria-hidden="true"></div>
@@ -101,14 +102,16 @@ function buildCardElement(task) {
  */
 function handleCardMoved(evt) {
   const card = evt.item;
-  const fromColumn = evt.from.closest(".column");
-  const toColumn = evt.to.closest(".column");
+  const fromColumn = evt.from?.closest(".column");
+  const toColumn = evt.to?.closest(".column");
 
+  if(!fromColumn || !toColumn) return; // safety net — shouldn't happen once real data is rendering
+  
   if (fromColumn === toColumn) return; // just a reorder, status unchanged
 
   const newStatus = toColumn.dataset.status;
   const taskId = card.dataset.taskId;
-  if (!taskId) return; // safety net — shouldn't happen once real data is rendering
+  if (!taskId || !newStatus) return; // safety net — shouldn't happen once real data is rendering
 
   updateTask(taskId, { status: newStatus }).catch((err) => {
     console.error("Failed to update task status:", err);
