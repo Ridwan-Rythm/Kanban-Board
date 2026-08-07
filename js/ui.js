@@ -1,4 +1,6 @@
 import { addTask, updateTask, deleteTask } from "./firestore.js";
+import { updateProfile, updatePassword } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { auth } from "./firebase-config.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.getElementById("task-modal-overlay");
@@ -129,5 +131,97 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       alert("Couldn't delete this task: " + err.message);
     }
+  });
+
+  // ================= Profile Sidebar (change name / change password) =================
+  const profileBtn = document.getElementById("user-profile");
+  const sidebarOverlay = document.getElementById("profile-sidebar-overlay");
+  const sidebarClose = document.getElementById("profile-sidebar-close");
+  const changeNameForm = document.getElementById("change-name-form");
+  const changeNameInput = document.getElementById("change-name-input");
+  const changePasswordForm = document.getElementById("change-password-form");
+  const changePasswordInput = document.getElementById("change-password-input");
+  const sidebarStatus = document.getElementById("profile-sidebar-status");
+
+  function closeSidebar() {
+    sidebarOverlay.classList.remove("is-open");
+  }
+
+  profileBtn.addEventListener("click", () => {
+    changeNameInput.value = auth.currentUser?.displayName || "";
+    changePasswordInput.value = "";
+    sidebarStatus.textContent = "";
+    sidebarOverlay.classList.add("is-open");
+  });
+
+  sidebarClose.addEventListener("click", closeSidebar);
+
+  sidebarOverlay.addEventListener("click", (e) => {
+    if (e.target === sidebarOverlay) closeSidebar();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebarOverlay.classList.contains("is-open")) {
+      closeSidebar();
+    }
+  });
+
+  changeNameForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const newName = changeNameInput.value.trim();
+    if (!newName) return;
+
+    try {
+      await updateProfile(auth.currentUser, { displayName: newName });
+
+      // Reflect the change immediately, top right — same first-name +
+      // avatar-initial logic used when first logging in.
+      const firstName = newName.split(" ")[0];
+      document.getElementById("profile-name").textContent = firstName;
+      document.getElementById("profile-avatar").textContent = firstName.slice(0, 2).toUpperCase();
+
+      sidebarStatus.textContent = "Name updated!";
+    } catch (err) {
+      alert("Couldn't update name: " + err.message);
+    }
+  });
+
+  changePasswordForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const newPassword = changePasswordInput.value;
+    if (!newPassword) return;
+
+    try {
+      await updatePassword(auth.currentUser, newPassword);
+      changePasswordInput.value = "";
+      sidebarStatus.textContent = "Password updated!";
+    } catch (err) {
+      if (err.code === "auth/requires-recent-login") {
+        alert("For security, please log out and log back in, then try changing your password again.");
+      } else {
+        alert("Couldn't update password: " + err.message);
+      }
+    }
+  });
+
+  // ================= Dark mode toggle =================
+  // (This file's own header comment already said theme toggle logic
+  // would live here.) Flips the `dark` class on <body>, which the
+  // existing body.dark{...} variables in style.css already handle —
+  // no CSS changes needed for the colors themselves.
+  const themeToggleBtn = document.getElementById("theme-toggle");
+  const THEME_KEY = "kanban-theme";
+
+  function applyTheme(theme) {
+    document.body.classList.toggle("dark", theme === "dark");
+    themeToggleBtn.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+
+  applyTheme(localStorage.getItem(THEME_KEY) || "light");
+
+  themeToggleBtn.addEventListener("click", () => {
+    const nextTheme = document.body.classList.contains("dark") ? "light" : "dark";
+    localStorage.setItem(THEME_KEY, nextTheme);
+    applyTheme(nextTheme);
   });
 });
