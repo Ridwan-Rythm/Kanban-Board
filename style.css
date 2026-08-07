@@ -907,3 +907,76 @@ button:focus-visible {
 .modal__delete:hover {
   background: #fdeaee;
 }
+
+/* =========================================================
+   Profile sidebar (Change Name / Change Password)
+   Slides in from the right. Reuses .modal__field and .modal__close
+   for input/label/close-button styling, so nothing needed to be
+   redefined for those.
+   ========================================================= */
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 36, 48, 0.35);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.sidebar-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.profile-sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 340px;
+  background: var(--surface);
+  box-shadow: -4px 0 16px rgba(31, 36, 48, 0.15);
+  padding: 20px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+
+.sidebar-overlay.is-open .profile-sidebar {
+  transform: translateX(0);
+}
+
+.profile-sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.profile-sidebar__title {
+  font-size: 1.1rem;
+}
+
+.profile-sidebar__form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-sidebar__form:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.profile-sidebar__status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  min-height: 1em;
+}

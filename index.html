@@ -266,6 +266,13 @@
         authPage.classList.add("is-hidden");
         boardPage.classList.remove("is-hidden");
         userProfile.classList.remove("is-hidden");
+
+        // Show the logged-in user's first name (and a matching avatar
+        // initial) top right, instead of the old "Jordan Doe" placeholder.
+        const fullName = user.displayName || user.email.split("@")[0];
+        const firstName = fullName.split(" ")[0];
+        document.getElementById("profile-name").textContent = firstName;
+        document.getElementById("profile-avatar").textContent = firstName.slice(0, 2).toUpperCase();
       } else {
         authPage.classList.remove("is-hidden");
         boardPage.classList.add("is-hidden");
@@ -323,6 +330,34 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- ===== Profile Sidebar ===== -->
+  <div class="sidebar-overlay" id="profile-sidebar-overlay">
+    <aside class="profile-sidebar" role="dialog" aria-modal="true" aria-labelledby="profile-sidebar-title">
+      <div class="profile-sidebar__header">
+        <h2 class="profile-sidebar__title" id="profile-sidebar-title">Account Settings</h2>
+        <button type="button" class="modal__close" id="profile-sidebar-close" aria-label="Close">✕</button>
+      </div>
+
+      <form class="profile-sidebar__form" id="change-name-form">
+        <label class="modal__field">
+          Name
+          <input type="text" id="change-name-input" placeholder="Your name" required />
+        </label>
+        <button type="submit" class="btn btn--primary">Save Name</button>
+      </form>
+
+      <form class="profile-sidebar__form" id="change-password-form">
+        <label class="modal__field">
+          New Password
+          <input type="password" id="change-password-input" placeholder="••••••••" required minlength="6" />
+        </label>
+        <button type="submit" class="btn btn--primary">Save Password</button>
+      </form>
+
+      <p class="profile-sidebar__status" id="profile-sidebar-status"></p>
+    </aside>
   </div>
 
   <!-- js/board.js and js/ui.js will come in Week 2 -->
